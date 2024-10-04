@@ -2,6 +2,9 @@ import time
 import keyboard  # Library to capture keyboard input
 from GUI import GUI
 from Camera import Camera
+import pygame
+from pygame.locals import *
+import sys
 
 class State:
     """Base class for all states in the state machine."""
@@ -63,8 +66,9 @@ class StateMachine:
             time.sleep(0.5)  # Simulate a time delay in each iteration
 
 
-# Create state instances
-def custom_on_step():
+# example states and functions
+
+def custom_off_step():
     print("Human detected, lights ON.")
     # Keep checking for input to turn off
     if keyboard.is_pressed('n'):  # Simulate no human detected
@@ -77,32 +81,77 @@ off_state = State(
     step_func=custom_off_step
 )
 
+#state functions
+
 def stepSearchObject():
     shapes=camera.getShapes()
-    gui.AddShapes(shapes)
-    if gui.GetShapes().count==0:    return
-    return User_input
+    gui.addShapes(shapes)
+    if gui.getShapes().count==0:  return
+    return userInputState
 
 def entryUserInput():
     gui.resetTimer()
 
-search_object= State(
+def stepUserInput():
+    for event in pygame.event.get():
+        if event.type==shapeSelectedType:
+            gui.selectShape(event.shape)
+            return moveArmToObjectState
+    if gui.checkTimer(100): return searchObjectState        
+
+
+#States
+
+searchObjectState= State(
     name="search object",
     step_func=stepSearchObject
 )
-User_input= State(   # unfinished state
+userInputState= State(   # unfinished state
     name="User input",
-    entry_func=entryUserInput 
+    entry_func=entryUserInput ,
+    step_func=stepUserInput
 )
-# Initialize the state machine with Off state initially
-state_machine = StateMachine(initial_state=off_state)
+moveArmToObjectState= State(
+    name="move arm to object",
+
+)
+
+
+# Initialize the objects and pygame
+pygame.init()
+state_machine = StateMachine(initial_state=searchObjectState)
 camera=Camera()
-gui=GUI()
+gui=GUI(pygame.display.set_mode((0, 0), pygame.FULLSCREEN))
+
+shapeSelectedType=USEREVENT+1
 
 
-# Run the state machine in a loop
-try:
-    print("Press 'o' for human presence, 'n' for no human.")
-    state_machine.run()
-except KeyboardInterrupt:
-    print("State machine stopped.")
+def main():
+
+    end=False
+    # Run the state machine in a loop
+    while True:
+
+        try:
+            events=pygame.event.get()
+            for event in events:
+                if event.type == QUIT:
+                    end=True
+                if event.type==MOUSEBUTTONDOWN:
+                    for shape in gui.getShapes():
+                        if shape.clickedOn():
+                            shapeSelected=pygame.event.Event(shapeSelectedType,shape=shape) # creates event and attaches the shape that was clicked on
+                            pygame.event.post(shapeSelected) # posts the event
+                            break # break so it doesnt go to multiple shapes if they overlap
+            
+            if end==True: #User has quit
+                pygame.quit()
+                sys.exit()
+                break
+            state_machine.step()
+
+        except KeyboardInterrupt:
+            break
+
+
+main()

@@ -6,25 +6,29 @@ from DoBotArm import DoBotArm
 
 class GUI:
 
-    def __init__(self):
+    def __init__(self,window):
         pygame.init()
-        self.__screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-        self.__ListShapes=list
+        self.__window = window
+        self.__ListShapes: list[Shape]
         self.__selectedShape= None
         self.__detectedColor= 255,255,255
         self.__timerStartTime=time.time_ns()
 
-    def addShapes(self,shape: Shape):
-        self.__ListShapes.append(shape)
-        shape.drawShape(self.__screen)
+    def addShapes(self,shapes: list[Shape]):
+        self.__ListShapes=shapes
+        for shape in self.__ListShapes:
+            shape.drawShape(self.__window)
         
     def selectShape(self,shape: Shape):
-        DoBotArm.moveArmXYZ(shape.getPosition(),shape.getDepth())
+        self.__selectedShape=shape
+        #x,y=shape.getCenter()
+        #DoBotArm.moveArmXY(x,y,shape.getDepth())
+        pass
 
     def getShapes(self):
         return self.__ListShapes
     def resetTimer(self):
         self.__timerStartTime=time.time_ns()
-    def checkTimer(self,targetTime): #targetTime in ms since the timer was reset
+    def checkTimer(self,targetTime: int): #targetTime in ms since the timer was reset
         if time.time_ns()-self.__timerStartTime>targetTime*1000*1000 : return True
         else: return False
