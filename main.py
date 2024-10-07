@@ -5,6 +5,9 @@ from Camera import Camera
 import pygame
 from pygame.locals import *
 import sys
+import DoBotArm as dbt
+from serial.tools import list_ports
+import threading
 
 class State:
     """Base class for all states in the state machine."""
@@ -99,28 +102,42 @@ def stepUserInput():
             return moveArmToObjectState
     if gui.checkTimer(100): return searchObjectState        
 
-
+def stepMoveArmToObject():
+    if dobot.getPosition()==gui.getSelectedShape().getCenter():
+        return placeOnConveyorState
+    
+def entryPlaceOnConveyor():
+    gui.dobot.toggleSuction()
+    x,y=gui.getSelectedShape().getCenter()
+    dobot.moveArmXYZ(x,y,gui.getSelectedShape().getDepth())
 #States
 
 searchObjectState= State(
     name="search object",
     step_func=stepSearchObject
 )
-userInputState= State(   # unfinished state
+userInputState= State(   
     name="User input",
     entry_func=entryUserInput ,
     step_func=stepUserInput
 )
 moveArmToObjectState= State(
     name="move arm to object",
-
+    step_func=stepMoveArmToObject
 )
-
+placeOnConveyorState= State(
+    name="place on conveyor",
+    entry_func=entryPlaceOnConveyor
+)
 
 # Initialize the objects and pygame
 pygame.init()
 state_machine = StateMachine(initial_state=searchObjectState)
 camera=Camera()
+
+homeX, homeY, homeZ = 170, 0, 0
+dobot = dbt.DoBotArm("COM3", homeX, homeY, homeZ, home= False)
+
 gui=GUI(pygame.display.set_mode((0, 0), pygame.FULLSCREEN))
 
 shapeSelectedType=USEREVENT+1
