@@ -59,9 +59,11 @@ class Triangle(Shape):
 
         # Calculate the triangle points relative to the surface's center
         surface_center = (surface_size // 2, surface_size // 2)
-        point1 = [surface_center[0], surface_center[1] + (2 * self.__sideLength) / 3]  # Bottom-left corner
-        point2 = [surface_center[0] - self.__sideLength / 2, surface_center[1] + (self.__sideLength / 3)]  # Bottom-right corner
-        point3 = [surface_center[0] + self.__sideLength / 2, surface_center[1] - (self.__sideLength / 3)]  # Top-middle point
+        height = (math.sqrt(3)/2)*8
+        point1 = [surface_center[0], surface_center[1] - (height)]  # Top vertex
+        point2 = [surface_center[0] - self.__sideLength / 2, surface_center[1] + (height / 2)]  # Bottom-left vertex
+        point3 = [surface_center[0] + self.__sideLength / 2, surface_center[1] + (height / 2)]  # Bottom-right vertex
+
         triangle_points = [point1, point2, point3]
 
         # Draw the triangle on the surface
