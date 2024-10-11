@@ -9,7 +9,7 @@ class Square(Shape):
         self.__sideLength = sideLength
         self.__color = color  # Store color
         self.__position = position  # Initialize position
-        self.__orientation = orientation  # Initialize orientation
+        self.__orientation = math.radians(orientation)  # Initialize orientation
         self.square_surface = None  # To hold the square surface
         self.width = math.sin(self.__orientation)*self.__sideLength + math.cos(self.__orientation)*self.__sideLength
 

@@ -34,7 +34,6 @@ class Triangle(Shape):
 
         centerX = self.__sideLength/2
         centerY = (2*self.__sideLength)/3
-        boundHeight = math.cos(1.047)*self.__sideLength
         cornerLength = math.sqrt(centerX ** 2 + centerY ** 2)
         cornerAngle = math.atan(centerX / centerY)
         newAngle = cornerAngle - self.__orientation
@@ -53,15 +52,12 @@ class Triangle(Shape):
 
     def drawShape(self, window: pygame.Surface):
         center = self.getCenter()
-        point1 = [center[0], center[1] + (2 * self.__sideLength) / 3]  # Bottom-left corner
-        point2 = [center[0] - self.__sideLength / 2, center[1] + (self.__sideLength / 3)]  # Bottom-right corner
-        point3 = [center[0] + self.__sideLength / 2, center[1] - (self.__sideLength / 3)]  # Top-middle point
-        triangle_points = [point1, point2, point3]
 
-        surface_size = self.__sideLength * 2
-        triangle_surface = pygame.Surface((surface_size, surface_size), pygame.SRCALPHA)  # Transparent surface
+        # Create a transparent surface to draw the triangle
+        surface_size = int(self.__sideLength * 2)
+        triangle_surface = pygame.Surface((surface_size, surface_size), pygame.SRCALPHA)
 
-        # Calculate the points relative to the surface's center
+        # Calculate the triangle points relative to the surface's center
         surface_center = (surface_size // 2, surface_size // 2)
         point1 = [surface_center[0], surface_center[1] + (2 * self.__sideLength) / 3]  # Bottom-left corner
         point2 = [surface_center[0] - self.__sideLength / 2, surface_center[1] + (self.__sideLength / 3)]  # Bottom-right corner
@@ -70,9 +66,11 @@ class Triangle(Shape):
 
         # Draw the triangle on the surface
         pygame.draw.polygon(triangle_surface, self.__color, triangle_points)
-        rotated_surface = pygame.transform.rotate(triangle_surface, math.degrees(self.__orientation))  # Convert radians to degrees
 
-        # Get the new rect of the rotated surface and position it to the center
+        # Rotate the surface
+        rotated_surface = pygame.transform.rotate(triangle_surface, math.degrees(self.__orientation))
+
+        # Get the new rect of the rotated surface and position it at the center
         rotated_rect = rotated_surface.get_rect(center=center)
 
         # Blit the rotated surface onto the main window
@@ -80,7 +78,7 @@ class Triangle(Shape):
 
     def clickedOn(self, mousePoint):
         radius = (2*self.__sideLength)/(math.sqrt(3)*2)
-        center = self.getCenter
+        center = self.getCenter()
         mouseX, mouseY = mousePoint
         centerX = center[0] + radius  
         centerY = center[1] + radius
