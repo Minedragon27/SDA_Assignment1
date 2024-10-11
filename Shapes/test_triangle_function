@@ -1,0 +1,60 @@
+def test_triangle():
+    # Pygame initialization
+    pygame.init()
+    window = pygame.display.set_mode((600, 600))
+    pygame.display.set_caption("Triangle Test")
+
+    # Get user input for the triangle parameters
+    topvertex_input = input("Enter the top vertex (x, y) as two integers (comma-separated): ")
+    topvertex = list(map(int, topvertex_input.split(',')))
+
+    centroid_input = input("Enter the centroid (x, y) as two integers (comma-separated): ")
+    centroid = list(map(int, centroid_input.split(',')))
+
+    sideLength = int(input("Enter the side length (integer): "))
+
+    orientation = int(input("Enter the orientation of the triangle in degrees: "))
+
+    # Create a Triangle object
+    color = (0, 255, 0)  # Green color for the triangle
+    depth = 0  # Depth can be 0 for now
+    triangle = Triangle(color, topvertex, centroid, orientation, depth, sideLength)
+
+    # Test getCenter and getShapetype
+    center = triangle.getCenter()
+    shape_type = triangle.getShapetype()
+
+    print(f"Center: {center}")
+    print(f"Shape Type: {shape_type}")
+
+    # Get point coordinate from user
+    point_input = input("Enter a point coordinate (x, y) as two integers (comma-separated): ")
+    point_coord = list(map(int, point_input.split(',')))
+
+    # Main loop
+    running = True
+    while running:
+        window.fill((255, 255, 255))  # White background
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            # Detect mouse click
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if triangle.clickedOn(mouse_pos):
+                    print("Triangle clicked!")
+
+        # Draw the triangle on the window
+        triangle.drawShape(window)
+
+        # Draw the point at the specified coordinates
+        pygame.draw.circle(window, (255, 0, 0), point_coord, 5)  # Draw a red point
+
+        # Refresh display
+        pygame.display.update()
+
+    pygame.quit()
+
+# Call the test function
+test_triangle()
