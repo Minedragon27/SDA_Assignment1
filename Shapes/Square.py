@@ -1,97 +1,97 @@
 import math
 import pygame
 from pygame.locals import *
-from Shape import Shape
+from Shape import *
 
-# Assuming Shape is already defined elsewhere and imported
 class Square(Shape):
     def __init__(self, color, position, orientation, depth, sideLength):
-        super().__init__(color, position, orientation, depth)
+        super().__init__(color, position, orientation, depth) 
         self.__sideLength = sideLength
         self.__color = color  # Store color
         self.__position = position  # Initialize position
-        self.__orientation = orientation  # Initialize orientation
+        self.__orientation = math.radians(orientation)  # Initialize orientation
         self.square_surface = None  # To hold the square surface
+        #self.width = math.sin(self.__orientation)*self.__sideLength + math.cos(self.__orientation)*self.__sideLength
 
-    def getCenter(self, orientation, sideLength):
-        self.__sideLength = sideLength
-        self.__orientation = orientation
-        self.width = math.sin(self.__orientation) * self.__sideLength + math.cos(self.__orientation) * self.__sideLength
-        self.X = (self.width / 2)
-        self.Y = self.X
-        self.center = [self.X, self.Y]
-        return self.center
+    def getCenter(self):
+        PI = math.pi
+        HALF_PI = PI / 2
+        centerX = self.__sideLength/2
+        centerY = self.__sideLength/2
+        cornerLength = math.sqrt(centerX ** 2 + centerY ** 2)
+        cornerAngle = math.atan2(centerY, centerX)
+        newAngle = cornerAngle + (self.__orientation - HALF_PI)
+        self.__center = [(math.cos(newAngle) * cornerLength) + self.position[0], (-math.sin(newAngle) * cornerLength) + self.position[1]]
+        return self.__center
         
     def getShapetype(self):
-        return "Square"
+        return "square"
 
     def drawShape(self, window: pygame.Surface):
-        scale_Factor = 1
-        square_size = self.__sideLength * scale_Factor
-        self.square_surface = pygame.Surface((square_size, square_size), pygame.SRCALPHA)
-        self.square_surface.fill(self.__color)
-        self.rotated_surface = pygame.transform.rotate(self.square_surface, self.__orientation)
-        window.blit(self.rotated_surface, (self.__position[0], self.__position[1]))
+        self.getCenter()
+        square_surface = pygame.Surface((self.__sideLength, self.__sideLength), pygame.SRCALPHA)
+        square_surface.fill(self.__color)
+        self.rotated_surface = pygame.transform.rotate(square_surface, math.degrees(self.__orientation))
+        rotated_rect = self.rotated_surface.get_rect(center=self.__center)
+        # Blit the rotated surface onto the main window
+        window.blit(self.rotated_surface, rotated_rect.topleft)
+        self.rotated_rect = rotated_rect
 
     def clickedOn(self, mousePoint):
-        if self.square_surface is None:
-            return False  # Return false if the surface has not been created
+        if not hasattr(self, 'rotated_surface'):
+            return False  # Return false if the surface hasn't been drawn yet
+        # Create a mask from the rotated surface
         mask = pygame.mask.from_surface(self.rotated_surface)
-        square_rect = self.rotated_surface.get_rect(topleft=(self.__position[0], self.__position[1]))
-        relative_mouse_pos = (mousePoint[0] - square_rect.x, mousePoint[1] - square_rect.y)
-
-        if 0 <= relative_mouse_pos[0] < square_rect.width and 0 <= relative_mouse_pos[1] < square_rect.height:
+        # Convert the mouse coordinates to the local coordinates of the rotated surface
+        relative_mouse_pos = (mousePoint[0] - self.rotated_rect.left, mousePoint[1] - self.rotated_rect.top)
+        # Check if the mouse click is within the bounds of the rotated surface
+        if 0 <= relative_mouse_pos[0] < self.rotated_rect.width and 0 <= relative_mouse_pos[1] < self.rotated_rect.height:
             return mask.get_at(relative_mouse_pos)  # True if clicked on the shape, False otherwise
         return False
-
 
 def test_square():
     # Pygame initialization
     pygame.init()
-    window = pygame.display.set_mode((600, 600))
-    pygame.display.set_caption("Square Test")
+    window = pygame.display.set_mode((800, 800))
+    pygame.display.set_caption("square Test")
 
-    # Get user input for the square parameters
-    centroid_input = input("Enter the centroid (x, y) as two integers (comma-separated): ")
-    centroid = list(map(int, centroid_input.split(',')))
+    # Get user input for the triangle parameters
+    position_input = input("Enter the centroid (x, y) as two integers (comma-separated): ")
+    position = list(map(int, position_input.split(',')))
 
-    sideLength = int(input("Enter the side length (integer): "))
+    sideLength = int(input("Enter the sidelength "))
 
-    orientation = int(input("Enter the orientation of the square in degrees: "))
+    orientation = int(input("Enter the orientation "))
 
-    # Create a Square object
-    color = (255, 0, 0)  # Red color for the square
+    # Create a Triangle object
+    color = (0, 255, 0)  # Green color for the triangle
     depth = 0  # Depth can be 0 for now
-    square = Square(color, centroid, orientation, depth, sideLength)
-
+    square = Square(color, position, orientation, depth, sideLength)
     # Test getCenter and getShapetype
-    center = square.getCenter(orientation, sideLength)
+    center = square.getCenter()
     shape_type = square.getShapetype()
-
     print(f"Center: {center}")
     print(f"Shape Type: {shape_type}")
-
+    # Get point coordinate from user
     # Main loop
     running = True
     while running:
         window.fill((255, 255, 255))  # White background
         for event in pygame.event.get():
-            if event.type == QUIT:
+            if event.type == pygame.QUIT:
                 running = False
-
             # Detect mouse click
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if square.clickedOn(mouse_pos):
-                    print("Square clicked!")
-
-        # Draw the square on the window
+                    print("square clicked!")
+        # Draw the triangle on the window
         square.drawShape(window)
-        
+        # Draw the point at the specified coordinates
+        pygame.draw.circle(window, (255, 0, 0), position, 5)  # Draw a red point
+        pygame.draw.circle(window, (0, 0, 255), center, 5)
         # Refresh display
         pygame.display.update()
-
     pygame.quit()
-
 # Call the test function
 test_square()

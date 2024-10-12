@@ -1,84 +1,85 @@
 import math
 import pygame
-from Shape import Shape  # Import Shape class correctly
+from Shape import *
 
 class Circle(Shape):
     def __init__(self, color, position, orientation, depth, radius): 
-        # Initialize superclass (Shape)
         super().__init__(color, position, orientation, depth)
         self.__radius = radius
         self.__color = color
         self.__position = position
 
     def getCenter(self):
-        """Calculate and return the center of the circle."""
-        centerX = self.__position[0] + self.__radius  # Center X from the top-left position
-        centerY = self.__position[1] + self.__radius  # Center Y from the top-left position
-        self.center = [centerX, centerY]  # Store and return the center as a list
+        # Calculate center based on top-left corner (self.position)
+        centerX = self.__position[0] + self.__radius
+        centerY = self.__position[1] + self.__radius
+        self.center = [centerX, centerY]
         return self.center
 
     def getShapetype(self):
-        """Return the shape type."""
         return "Circle"
 
     def clickedOn(self, mousePoint):
-        """Check if the circle was clicked by comparing the distance from the center."""
-        center = self.getCenter()  # Get the center of the circle
-        mouseX, mouseY = mousePoint  # Unpack the mouse click coordinates
-        centerX, centerY = center  # Unpack the circle's center coordinates
-        distance = math.sqrt((mouseX - centerX) ** 2 + (mouseY - centerY) ** 2)  # Calculate the distance from the center
-        return distance <= self.__radius  # Return True if within the radius, False otherwise
+        center = self.getCenter()  # Fix: Call the method
+        mouseX, mouseY = mousePoint
+        centerX, centerY = center
+        distance = math.sqrt((mouseX - centerX) ** 2 + (mouseY - centerY) ** 2)
+        if distance <= self.__radius:
+            return True
+        return False  # Fix: Return False if the mouse click is outside the circle
 
     def drawShape(self, window: pygame.Surface):
-        """Draw the circle on the provided Pygame surface."""
-        center = self.getCenter()  # Get the center of the circle
-        pygame.draw.circle(window, self.__color, (int(center[0]), int(center[1])), int(self.__radius))  # Draw the circle
-
+        center = self.getCenter()  # Fix: Call the method
+        pygame.draw.circle(window, self.__color, (int(center[0]), int(center[1])), int(self.__radius))
 
 def test_circle():
-    # Pygame initialization
+    """Test the circle class by drawing it on a Pygame window."""
     pygame.init()
-    window = pygame.display.set_mode((600, 600))
-    pygame.display.set_caption("Circle Test")
+    window = pygame.display.set_mode((800, 800))
+    pygame.display.set_caption("circle Test")
 
     # Get user input for the circle parameters
-    centroid_input = input("Enter the centroid (x, y) as two integers (comma-separated): ")
-    centroid = list(map(int, centroid_input.split(',')))
+    position_input = input("Enter the centroid (x, y) as two integers (comma-separated): ")
+    position = list(map(int, position_input.split(',')))
 
-    radius = int(input("Enter the radius (integer): "))
+    radius = int(input("Enter the side radius: "))
 
-    orientation = int(input("Enter the orientation of the circle in degrees (this won't affect the circle): "))
+    orientation = 0
 
-    # Create a Circle object
-    color = (0, 0, 255)  # Blue color for the circle
+    # Create a circle object
+    color = (0, 255, 0)  # Green color for the circle
     depth = 0  # Depth can be 0 for now
-    circle = Circle(color, centroid, orientation, depth, radius)
-
+    circle = Circle(color, position, orientation, depth, radius)
+    
     # Test getCenter and getShapetype
     center = circle.getCenter()
     shape_type = circle.getShapetype()
-
     print(f"Center: {center}")
     print(f"Shape Type: {shape_type}")
 
-    # Main loop to display the circle
+    # Main loop
     running = True
     while running:
         window.fill((255, 255, 255))  # White background
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
+            
             # Detect mouse click
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if circle.clickedOn(mouse_pos):
-                    print("Circle clicked!")
+                    print("circle clicked!")
 
         # Draw the circle on the window
         circle.drawShape(window)
-
-        # Refresh display
+        
+        # Draw the reference point at the centroid
+        pygame.draw.circle(window, (255, 0, 0), position, 5)  # Draw a blue point at the centroid
+        pygame.draw.circle(window, (0, 0, 255), center, 5)
+        
+        # Refresh the display
         pygame.display.update()
 
     pygame.quit()
