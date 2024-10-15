@@ -8,6 +8,7 @@ import sys
 import DoBotArm as dbt
 from serial.tools import list_ports
 import threading
+from conveyor import Conveyor
 
 class State:
     """Base class for all states in the state machine."""
@@ -69,21 +70,6 @@ class StateMachine:
             time.sleep(0.5)  # Simulate a time delay in each iteration
 
 
-# example states and functions
-
-def custom_off_step():
-    print("Human detected, lights ON.")
-    # Keep checking for input to turn off
-    if keyboard.is_pressed('n'):  # Simulate no human detected
-        return off_state
-    return None  # Stay in the On state
-
-off_state = State(
-    name="Off",
-    entry_func=lambda: print("Lights are already OFF"),
-    step_func=custom_off_step
-)
-
 #state functions
 
 def stepSearchObject():
@@ -107,9 +93,17 @@ def stepMoveArmToObject():
         return placeOnConveyorState
     
 def entryPlaceOnConveyor():
-    gui.dobot.toggleSuction()
-    x,y=gui.getSelectedShape().getCenter()
-    dobot.moveArmXYZ(x,y,gui.getSelectedShape().getDepth())
+    dobot.toggleSuction()
+    dobot.moveArmXYZ(conveyor.getLoadingPosition(),10)
+
+def stepPlaceOnConveyor():
+    if dobot.getPosition == conveyor.getLoadingPosition():
+        return searchObjectState
+    
+def leavePlaceOnConveyro():
+    dobot.toggleSuction()
+    conveyor.goToEndPos()
+    
 #States
 
 searchObjectState= State(
@@ -127,7 +121,9 @@ moveArmToObjectState= State(
 )
 placeOnConveyorState= State(
     name="place on conveyor",
-    entry_func=entryPlaceOnConveyor
+    entry_func=entryPlaceOnConveyor,
+    step_func=stepPlaceOnConveyor,
+    leave_func=leavePlaceOnConveyro
 )
 
 # Initialize the objects and pygame
@@ -139,6 +135,8 @@ homeX, homeY, homeZ = 170, 0, 0
 dobot = dbt.DoBotArm("COM3", homeX, homeY, homeZ, home= False)
 
 gui=GUI(pygame.display.set_mode((0, 0), pygame.FULLSCREEN))
+
+conveyor=Conveyor()
 
 shapeSelectedType=USEREVENT+1
 

@@ -22,8 +22,11 @@ class GUI:
     def selectShape(self,shape: Shape,dobot: DoBotArm):
         self.__selectedShape=shape
         x,y=shape.getCenter()
-        dobot.moveArmXY(x,y,shape.getDepth())
-        pass
+        #Mapping pixels to millimeters. The X and Y are swapped due to offset in coordinate space
+        RealY=(x-0)*(154-0)/(315-0)+0-145
+        RealX=(y-0)*(152-0)/(320-0)+0-100
+
+        dobot.moveArmXY(RealX,RealY,-60+shape.getDepth())
 
     def getShapes(self):
         return self.__ListShapes
