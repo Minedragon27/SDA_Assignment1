@@ -1,5 +1,18 @@
 import cv2 #import cv2 library
 import numpy as np # import numpy library
+import pygame
+import cv2
+#from Shape import Shape
+from Triangle import Triangle
+from Square import Square
+from Circle import Circle
+from pygame.locals import *
+
+# Initialize Pygame
+pygame.init()
+window = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Shape Display")
+
 # Blank line
 class Camera: # create Class Camera
     def __init__(self, camera_address = 0): # Initialize the class 
@@ -35,7 +48,7 @@ class Camera: # create Class Camera
         edges = cv2.dilate(edges, kernel, iterations=1) # Apply Dialation on the image to bridge the gaps in the contour, thicken line and fill small holes
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # Find the contours in the camera feed 
         object_count = len(contours) # Count the number of contours in the feed
-        print(f"Objects Detected: {object_count}") # Print the number of objects in the terminal
+        #print(f"Objects Detected: {object_count}") # Print the number of objects in the terminal
 # Blank Line
         shapes_info_list = [] # List to store information of the shapes
 # Blank Line
@@ -108,25 +121,15 @@ class Camera: # create Class Camera
 # *****Draw Bounding Rect*****
             cv2.drawContours(frame, [box_points], 0, (0, 255, 255), 2)
 # Blank Line
-# *****Rotation*****
+# *****orientation*****
             width, height = min_area_rect[1]
-            rotation_relative_to_longest_side = min_area_rect[2]
+            orientation_relative_to_longest_side = min_area_rect[2]
 # Blank Line
 # *****Binary mask*****
             mask = np.zeros_like(frame[:, :, 0])
             cv2.drawContours(mask, [contour], -1, 255, -1)
             mean_color_bgr = cv2.mean(frame, mask=mask)[:3]
             mean_color_rgb = (int(mean_color_bgr[2]), int(mean_color_bgr[1]), int(mean_color_bgr[0]))
-# Blank Line
-# *****Shapes List*****
-            shape_info = {
-                'type': shape_name,
-                'position': position,
-                'color': mean_color_rgb,
-                'rotation': round(rotation_relative_to_longest_side, 2),
-                'longest_side_length': round(max(width, height), 2)
-            }
-            shapes_info_list.append(shape_info)
 # Blank Line
 # *****Centroid(Inaccurate)*****
             M = cv2.moments(contour)
@@ -135,6 +138,18 @@ class Camera: # create Class Camera
                 cy = int(M["m01"] / M["m00"])
             else:
                 cx, cy = 0, 0
+# Blank Line
+# *****Shapes List*****
+            shape_info = {
+                'type': shape_name,
+                'position': position,
+                'color': mean_color_rgb,
+                'orientation': round(orientation_relative_to_longest_side, 2),
+                'longest_side_length': round(max(width, height), 2),
+                'centroid': (cx , cy)
+            }
+            shapes_info_list.append(shape_info)
+            #print(shape_info)
 # Blank Line
 # *****Draw Position and Centroid*****
             cv2.circle(frame, position, 5, (0, 0, 255), -1)
@@ -146,30 +161,83 @@ class Camera: # create Class Camera
     def release_camera(self):
         self.vid_capture.release()
         cv2.destroyAllWindows()
-# Blank Line
-# *****Cropping Dimensions(Changes with Resolution)*****
-crop_x1, crop_y1, crop_x2, crop_y2 = 410, 255, 725, 575
-# Blank Line
-# *****Initialize Camera*****
+# Initialize Camera
 camera = Camera()
-# Blank Line
-# *****Set Resolution*****
 camera.setResolution(1280, 720)
-# Blank Line
-# *****Detection Loop*****
-while True:
-    frame = camera.getImage(crop_x1, crop_y1, crop_x2, crop_y2)
-    if frame is None:
-        break
-# Blank Line
-    processed_frame, shapes_info_list, object_count = camera.getShapes(frame)
-# Blank Line
-    cv2.imshow('Shape Frame', processed_frame)
-# Blank Line
-    print("Shapes Infor:", shapes_info_list)
-# Blank Line
-    if cv2.waitKey(20) == ord('q'):
-        break
-# Blank Line
+crop_x1, crop_y1, crop_x2, crop_y2 = 410, 255, 715, 575
+    # Main Loop
+
+def Testfunction():
+    running = True
+    while running:
+        if cv2.waitKey(20) == ord('q'):
+            running = False
+            break
+        else:
+            running = True
+        shapes = []  # List to hold shape objects for Pygame rendering
+        # Fetch image from camera
+        frame = camera.getImage(crop_x1, crop_y1, crop_x2, crop_y2)
+        if frame is None:
+            break
+    
+        # Detect shapes in the frame
+        processed_frame, shapes_info_list, object_count = camera.getShapes(frame)
+    
+        # Clear the Pygame window
+        window.fill((255, 255, 255))  # White background
+    
+        # For each detected shape, create the corresponding Pygame object
+        shapes.clear()  # Clear the previous frame's shapes
+        for shape_info in shapes_info_list:
+            shape_type = shape_info['type']
+            position = shape_info['position']
+            color = shape_info['color']
+            orientation = shape_info['orientation']
+            side_length = shape_info['longest_side_length']
+            centroid = shape_info['centroid']
+            #print(centroid)
+
+            if shape_type == "Triangle":
+                triangle = Triangle(color, position, centroid, orientation, 0, side_length)
+                shapes.append(triangle)
+        
+            elif shape_type == "Square":
+                square = Square(color, position, orientation, 0, side_length)
+                shapes.append(square)
+
+            elif shape_type == "Circle":
+                circle = Circle(color, position, orientation, 0, side_length)
+                shapes.append(circle)
+    
+        # Draw each shape on the Pygame window
+        for shape in shapes:
+            shape.drawShape(window)
+
+        for event in pygame.event.get():
+            
+            if event.type == pygame.QUIT:
+                running = False
+                # Detect mouse click
+            if event.type==MOUSEBUTTONDOWN:
+                mousepoint = pygame.mouse.get_pos()
+                for shape in shapes:
+                    if shape.clickedOn(mousepoint):
+                        print("Clicked on "+shape.getShapetype())
+                        break # break so it doesnt go to multiple shapes if they overlap
+    
+        # Display the processed frame in OpenCV window for reference (Optional)
+        cv2.imshow('Processed Frame', processed_frame)
+
+        # Handle Pygame events and display
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+    
+        pygame.display.update()
+
+# Clean up
+Testfunction()
 camera.release_camera()
-# End of the code
+pygame.quit()
+cv2.destroyAllWindows()

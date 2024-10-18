@@ -1,4 +1,3 @@
-
 import pygame
 import time
 from Shape import Shape
@@ -23,8 +22,8 @@ class GUI:
         self.__selectedShape=shape
         x,y=shape.getCenter()
         #Mapping pixels to millimeters. The X and Y are swapped due to offset in coordinate space
-        RealY=(x-0)*(154-0)/(315-0)+0-145
-        RealX=(y-0)*(152-0)/(320-0)+0-100
+        RealX=(x-0)*(152 - 0) / (305 - 0) + 0  -200
+        RealY=(y-0)*(152 - 0) / (320-0)+0-310
 
         dobot.moveArmXY(RealX,RealY,-60+shape.getDepth())
 
