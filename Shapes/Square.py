@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 from Shape import *
 
+
 class Square(Shape):
     def __init__(self, color, position, orientation, depth, sideLength):
         super().__init__(color, position, orientation, depth) 
@@ -11,7 +12,7 @@ class Square(Shape):
         self.__sideLength = sideLength
         self.__color = color  # Store color
         self.__position = position  # Initialize position
-        self.__orientation = - math.radians(orientation) + HALF_PI  # Initialize orientation
+        self.__orientation = -math.radians(orientation) + HALF_PI # Initialize orientation
         self.square_surface = None  # To hold the square surface
         #self.width = math.sin(self.__orientation)*self.__sideLength + math.cos(self.__orientation)*self.__sideLength
 
@@ -27,19 +28,27 @@ class Square(Shape):
         return self.__center
         
     def getShapetype(self):
-        return "square"
+        return "Square"
 
     def drawShape(self, window: pygame.Surface):
-        self.getCenter()
         PI = math.pi
         HALF_PI = PI / 2
+        self.getCenter()
         square_surface = pygame.Surface((self.__sideLength, self.__sideLength), pygame.SRCALPHA)
         square_surface.fill(self.__color)
-        self.rotated_surface = pygame.transform.rotate(square_surface, math.degrees(self.__orientation))
+
+        # Rotate the surface and update the rect
+        self.rotated_surface = pygame.transform.rotate(square_surface, math.degrees(self.__orientation + HALF_PI))
         rotated_rect = self.rotated_surface.get_rect(center=self.__center)
+
         # Blit the rotated surface onto the main window
         window.blit(self.rotated_surface, rotated_rect.topleft)
         self.rotated_rect = rotated_rect
+
+        # Draw the centroid and position points
+        pygame.draw.circle(window, (0, 0, 255), self.__center, 5)  # Centroid in blue
+        pygame.draw.circle(window, (255, 0, 0), self.__position, 5)  # Position in red
+
 
     def clickedOn(self, mousePoint):
         if not hasattr(self, 'rotated_surface'):
@@ -50,7 +59,7 @@ class Square(Shape):
         relative_mouse_pos = (mousePoint[0] - self.rotated_rect.left, mousePoint[1] - self.rotated_rect.top)
         # Check if the mouse click is within the bounds of the rotated surface
         if 0 <= relative_mouse_pos[0] < self.rotated_rect.width and 0 <= relative_mouse_pos[1] < self.rotated_rect.height:
-            return mask.get_at(relative_mouse_pos)  # True if clicked on the shape, False otherwise
+            return mask.get_at(relative_mouse_pos) == 1  # True if clicked on the shape, False otherwise
         return False
 
 def test_square():
@@ -88,7 +97,7 @@ def test_square():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if square.clickedOn(mouse_pos):
-                    print("square clicked!")
+                    print("Square clicked!")
         # Draw the triangle on the window
         square.drawShape(window)
         # Draw the point at the specified coordinates
@@ -98,4 +107,4 @@ def test_square():
         pygame.display.update()
     pygame.quit()
 # Call the test function
-test_square()
+#test_square()

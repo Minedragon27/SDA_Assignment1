@@ -3,9 +3,9 @@ import pygame
 from Shape import *
 
 class Circle(Shape):
-    def __init__(self, color, position, orientation, depth, radius): 
+    def __init__(self, color, position, orientation, depth, diameter): 
         super().__init__(color, position, orientation, depth)
-        self.__radius = radius
+        self.__radius = diameter/2
         self.__color = color
         self.__position = position
 
@@ -29,20 +29,27 @@ class Circle(Shape):
         return False  # Fix: Return False if the mouse click is outside the circle
 
     def drawShape(self, window: pygame.Surface):
-        center = self.getCenter()  # Fix: Call the method
+        # Draw the main circle shape
+        center = self.getCenter()
         pygame.draw.circle(window, self.__color, (int(center[0]), int(center[1])), int(self.__radius))
+        
+        # Draw the centroid (center of the circle) in red
+        pygame.draw.circle(window, (0, 0, 255), (int(center[0]), int(center[1])), 5)
+        
+        # Draw the top-left position (position of the bounding box) in blue
+        pygame.draw.circle(window, (255, 0, 0), (int(self.__position[0]), int(self.__position[1])), 5)
 
 def test_circle():
     """Test the circle class by drawing it on a Pygame window."""
     pygame.init()
     window = pygame.display.set_mode((800, 800))
-    pygame.display.set_caption("circle Test")
+    pygame.display.set_caption("Circle Test")
 
     # Get user input for the circle parameters
-    position_input = input("Enter the centroid (x, y) as two integers (comma-separated): ")
+    position_input = input("Enter the top-left position (x, y) as two integers (comma-separated): ")
     position = list(map(int, position_input.split(',')))
 
-    radius = int(input("Enter the side radius: "))
+    radius = int(input("Enter the radius: "))
 
     orientation = 0
 
@@ -54,8 +61,8 @@ def test_circle():
     # Test getCenter and getShapetype
     center = circle.getCenter()
     shape_type = circle.getShapetype()
-    print(f"Center: {center}")
-    print(f"Shape Type: {shape_type}")
+    #print(f"Center: {center}")
+    #print(f"Shape Type: {shape_type}")
 
     # Main loop
     running = True
@@ -70,19 +77,15 @@ def test_circle():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if circle.clickedOn(mouse_pos):
-                    print("circle clicked!")
+                    print("Circle clicked!")
 
-        # Draw the circle on the window
+        # Draw the circle and its markers on the window
         circle.drawShape(window)
-        
-        # Draw the reference point at the centroid
-        pygame.draw.circle(window, (255, 0, 0), position, 5)  # Draw a blue point at the centroid
-        pygame.draw.circle(window, (0, 0, 255), center, 5)
         
         # Refresh the display
         pygame.display.update()
 
     pygame.quit()
 
-# Call the test function
-test_circle()
+# Uncomment the line below to test the circle functionality
+#test_circle()

@@ -3,21 +3,22 @@ import pygame
 from Shape import *
 
 class Triangle(Shape):
-    def __init__(self, color, topvertex, centroid, orientation, depth, sideLength): 
-        super().__init__(color, centroid, orientation, depth) 
+    def __init__(self, color, position, centroid, orientation, depth, sideLength): 
+        super().__init__(color, position, orientation, depth) 
         self.__sideLength = sideLength
         self.__color = color
-        self.__topvertex = topvertex
+        self.__position = position
         self.__centroid = centroid
-        angle_radians = math.atan2(self.__centroid[1] - self.__topvertex[1], self.__centroid[0] - self.__topvertex[0])
+        angle_radians = math.atan2(self.__centroid[1] - self.__position[1], self.__centroid[0] - self.__position[0])
         self.__orientation = angle_radians
 
     def getCenter(self):
+        #print(self.__centroid)
         PI = math.pi
         HALF_PI = PI / 2
         perp_angle = self.__orientation + HALF_PI
-        topleftX = (math.cos(perp_angle) * (self.__sideLength / 2)) + self.__topvertex[0]
-        topleftY = (math.sin(perp_angle) * (self.__sideLength / 2)) + self.__topvertex[1]
+        topleftX = (math.cos(perp_angle) * (self.__sideLength / 2)) + self.__position[0]
+        topleftY = (math.sin(perp_angle) * (self.__sideLength / 2)) + self.__position[1]
         Height = (math.sqrt(3) / 2) * self.__sideLength
         centerX = self.__sideLength/2 
         centerY = (Height/3)*2
@@ -62,6 +63,11 @@ class Triangle(Shape):
         # Blit the rotated surface onto the main window
         window.blit(rotated_surface, rotated_rect.topleft)
 
+        # Draw the centroid and position points
+        pygame.draw.circle(window, (0, 0, 255), self.__center, 5)  # Centroid in blue
+        pygame.draw.circle(window, (255, 0, 0), self.__position, 5)  # Position in red
+
+
     def clickedOn(self, mousePoint):
         radius = (self.__sideLength)/(math.sqrt(3))
         self.getCenter()
@@ -77,21 +83,20 @@ def test_triangle():
     pygame.display.set_caption("Triangle Test")
 
     # Get user input for the triangle parameters
-    topvertex_input = input("Enter the top vertex (x, y) as two integers (comma-separated): ")
-    topvertex = list(map(int, topvertex_input.split(',')))
+    position_input = input("Enter the top vertex (x, y) as two integers (comma-separated): ")
+    position = list(map(int, position_input.split(',')))
 
     centroid_input = input("Enter the centroid (x, y) as two integers (comma-separated): ")
     centroid = list(map(int, centroid_input.split(',')))
 
-    sideLength = int(input("sideLength"))
-    #sideLength = (((math.sqrt((centroid[0]-topvertex[0]) ** 2 + (centroid[1]-topvertex[1]) ** 2))/2)*3) / 0.866
+    sideLength = (((math.sqrt((centroid[0]-position[0]) ** 2 + (centroid[1]-position[1]) ** 2))/2)*3) / 0.866
 
-    orientation = int(2.32)
+    orientation = int(0)
 
     # Create a Triangle object
     color = (0, 255, 0)  # Green color for the triangle
     depth = 0  # Depth can be 0 for now
-    triangle = Triangle(color, topvertex, centroid, orientation, depth, sideLength)
+    triangle = Triangle(color, position, centroid, orientation, depth, sideLength)
     # Test getCenter and getShapetype
     center = triangle.getCenter()
     shape_type = triangle.getShapetype()
@@ -115,9 +120,9 @@ def test_triangle():
         # Draw the point at the specified coordinates
         pygame.draw.circle(window, (0, 0, 255), centroid, 5)  # Draw a red point
         pygame.draw.circle(window, (0, 0, 255), center, 5)
-        pygame.draw.circle(window, (255, 0, 0), topvertex, 5)
+        pygame.draw.circle(window, (255, 0, 0), position, 5)
         # Refresh display
         pygame.display.update()
     pygame.quit()
 # Call the test function
-test_triangle()
+#test_triangle()
