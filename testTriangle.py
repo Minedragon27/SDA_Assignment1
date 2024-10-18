@@ -13,7 +13,7 @@ class Triangle(Shape):
         self.__orientation = angle_radians
 
     def getCenter(self):
-        print(self.__centroid)
+        #print(self.__centroid)
         PI = math.pi
         HALF_PI = PI / 2
         perp_angle = self.__orientation + HALF_PI

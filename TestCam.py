@@ -6,6 +6,7 @@ import cv2
 from testTriangle import Triangle
 from testSquare import Square
 from testCircle import Circle
+from pygame.locals import *
 
 # Initialize Pygame
 pygame.init()
@@ -14,7 +15,7 @@ pygame.display.set_caption("Shape Display")
 
 # Blank line
 class Camera: # create Class Camera
-    def __init__(self, camera_address = 0): # Initialize the class 
+    def __init__(self, camera_address = 1): # Initialize the class 
         self.__camera_address = camera_address # Set Camera Address
         self.vid_capture = cv2.VideoCapture(camera_address, cv2.CAP_DSHOW) # Capture Live Feed of the camera
 # Blank line
@@ -47,7 +48,7 @@ class Camera: # create Class Camera
         edges = cv2.dilate(edges, kernel, iterations=1) # Apply Dialation on the image to bridge the gaps in the contour, thicken line and fill small holes
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # Find the contours in the camera feed 
         object_count = len(contours) # Count the number of contours in the feed
-        print(f"Objects Detected: {object_count}") # Print the number of objects in the terminal
+        #print(f"Objects Detected: {object_count}") # Print the number of objects in the terminal
 # Blank Line
         shapes_info_list = [] # List to store information of the shapes
 # Blank Line
@@ -148,7 +149,7 @@ class Camera: # create Class Camera
                 'centroid': (cx , cy)
             }
             shapes_info_list.append(shape_info)
-            print(shape_info)
+            #print(shape_info)
 # Blank Line
 # *****Draw Position and Centroid*****
             cv2.circle(frame, position, 5, (0, 0, 255), -1)
@@ -189,7 +190,7 @@ while running:
         orientation = shape_info['orientation']
         side_length = shape_info['longest_side_length']
         centroid = shape_info['centroid']
-        print(centroid)
+        #print(centroid)
 
         if shape_type == "Triangle":
             triangle = Triangle(color, position, centroid, orientation, 0, side_length)
@@ -203,6 +204,18 @@ while running:
             circle = Circle(color, position, orientation, 0, side_length)
             shapes.append(circle)
     
+    for event in pygame.event.get():
+            
+            if event.type == pygame.QUIT:
+                running = False
+            # Detect mouse click
+            if event.type==MOUSEBUTTONDOWN:
+                    mousepoint = pygame.mouse.get_pos()
+                    for shape in shapes:
+                        if shape.clickedOn(mousepoint):
+                            print("Clicked on "+shape.getShapetype())
+                            break # break so it doesnt go to multiple shapes if they overlap
+
     # Draw each shape on the Pygame window
     for shape in shapes:
         shape.drawShape(window)
@@ -216,7 +229,7 @@ while running:
             running = False
     
     pygame.display.update()
-    
+
     if cv2.waitKey(20) == ord('q'):
         break
 

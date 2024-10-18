@@ -52,14 +52,11 @@ class Square(Shape):
 
     def clickedOn(self, mousePoint):
         if not hasattr(self, 'rotated_surface'):
-            return False  # Return false if the surface hasn't been drawn yet
-        # Create a mask from the rotated surface
+            return False
         mask = pygame.mask.from_surface(self.rotated_surface)
-        # Convert the mouse coordinates to the local coordinates of the rotated surface
         relative_mouse_pos = (mousePoint[0] - self.rotated_rect.left, mousePoint[1] - self.rotated_rect.top)
-        # Check if the mouse click is within the bounds of the rotated surface
         if 0 <= relative_mouse_pos[0] < self.rotated_rect.width and 0 <= relative_mouse_pos[1] < self.rotated_rect.height:
-            return mask.get_at(relative_mouse_pos)  # True if clicked on the shape, False otherwise
+            return True
         return False
 
 def test_square():
@@ -97,7 +94,7 @@ def test_square():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if square.clickedOn(mouse_pos):
-                    print("square clicked!")
+                    print("Square clicked!")
         # Draw the triangle on the window
         square.drawShape(window)
         # Draw the point at the specified coordinates

@@ -3,9 +3,9 @@ import pygame
 from Shape import *
 
 class Circle(Shape):
-    def __init__(self, color, position, orientation, depth, radius): 
+    def __init__(self, color, position, orientation, depth, diameter): 
         super().__init__(color, position, orientation, depth)
-        self.__radius = radius
+        self.__radius = diameter/2
         self.__color = color
         self.__position = position
 
@@ -34,10 +34,10 @@ class Circle(Shape):
         pygame.draw.circle(window, self.__color, (int(center[0]), int(center[1])), int(self.__radius))
         
         # Draw the centroid (center of the circle) in red
-        pygame.draw.circle(window, (255, 0, 0), (int(center[0]), int(center[1])), 5)
+        pygame.draw.circle(window, (0, 0, 255), (int(center[0]), int(center[1])), 5)
         
         # Draw the top-left position (position of the bounding box) in blue
-        pygame.draw.circle(window, (0, 0, 255), (int(self.__position[0]), int(self.__position[1])), 5)
+        pygame.draw.circle(window, (255, 0, 0), (int(self.__position[0]), int(self.__position[1])), 5)
 
 def test_circle():
     """Test the circle class by drawing it on a Pygame window."""
@@ -61,8 +61,8 @@ def test_circle():
     # Test getCenter and getShapetype
     center = circle.getCenter()
     shape_type = circle.getShapetype()
-    print(f"Center: {center}")
-    print(f"Shape Type: {shape_type}")
+    #print(f"Center: {center}")
+    #print(f"Shape Type: {shape_type}")
 
     # Main loop
     running = True
@@ -88,4 +88,4 @@ def test_circle():
     pygame.quit()
 
 # Uncomment the line below to test the circle functionality
-# test_circle()
+#test_circle()
