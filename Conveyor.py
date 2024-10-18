@@ -4,7 +4,7 @@ import time
 from serial.tools import list_ports
 
 class Conveyor:
-    def __init__(self, length=0, width=0, position=0,loadingPos=(200,20,0)):
+    def __init__(self, length=700, width=100,loadingPos=0):
         """
         Constructor to initialize the Conveyor attributes.
         :param velocity: Speed of the conveyor (int)
@@ -15,12 +15,14 @@ class Conveyor:
         self.velocity = 0
         self.length = length
         self.width = width
-        self.position = position
+        self.position = loadingPos
         self.loadingPos=loadingPos
-        self.EndPos=loadingPos+length-40
+        self.EndPos=length-120 #only saves y coord
+        
 
     def setVelocity(self,  dobot: dbt,velocity=15000):    #15000 is the max value to set the velocity at max speed
-        dobot.SetConveyor(velocity!=0, speed = velocity) #with this velocity the conveyor moves with 120mm/s
+        
+        dobot.SetConveyor(not velocity==0, velocity) #with this velocity the conveyor moves with 120mm/s
         
         self.velocity = velocity
 
@@ -37,16 +39,17 @@ class Conveyor:
         """
         return self.width
 
-    def setPosition(self, position, distance, dobot: dbt):
+    def setPosition(self, position, dobot: dbt):
         
-        self.setVelocity(dobot, 15000)
+        self.setVelocity(dobot, - 15000)
 
-        self.distance = distance
         
-        distance = position-self.position
-        timeconstant = (120/distance)*1000
+        distance = abs(position-self.position)
+        timeconstant = 2400.0/distance
+        print(timeconstant)
         time.sleep(timeconstant)
-        dobot.SetConveyor(False, speed = 0)
+
+        self.setVelocity(dobot,0)
 
         self.position = position
 
@@ -59,7 +62,3 @@ class Conveyor:
     def goToEndPos(self, dobot: dbt):
         
         self.setPosition(self.EndPos, dobot)  #it should be reaching the end position in 5 seconds
-
-    
-        
-        
