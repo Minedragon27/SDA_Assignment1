@@ -1,5 +1,10 @@
+import threading
+from DoBotArm import DoBotArm as dbt
+import time
+from serial.tools import list_ports
+
 class Conveyor:
-    def __init__(self, velocity=0, length=0, width=0, position=0):
+    def __init__(self, length=700, width=100,loadingPos=0):
         """
         Constructor to initialize the Conveyor attributes.
         :param velocity: Speed of the conveyor (int)
@@ -7,52 +12,53 @@ class Conveyor:
         :param width: Width of the conveyor (int)
         :param position: Current position of the conveyor (int)
         """
-        self.velocity = velocity
+        self.velocity = 0
         self.length = length
         self.width = width
-        self.position = position
+        self.position = loadingPos
+        self.loadingPos=loadingPos
+        self.EndPos=length-120 #only saves y coord
+        
 
-    def setVelocity(self, velocity):
-        """
-        Set the velocity of the conveyor.
-        :param velocity: Speed to be set (int)
-        """
+    def setVelocity(self,  dobot: dbt,velocity=15000):    #15000 is the max value to set the velocity at max speed
+        
+        dobot.SetConveyor(not velocity==0, velocity) #with this velocity the conveyor moves with 120mm/s
+        
         self.velocity = velocity
 
     def getLength(self):
-        """
-        Get the length of the physical conveyor.
-        :return: Length of the conveyor (int)
-        """
+
+        #length of the conveyor is 60cm
+
         return self.length
 
     def getWidth(self):
         """
-        Get the width of the physical conveyor.
+        Get the width of the conveyor.
         :return: Width of the conveyor (int)
         """
         return self.width
 
-    def setPosition(self, position):
-        """
-        Set the current position of the conveyor.
-        :param position: Position to be set (int)
-        """
+    def setPosition(self, position, dobot: dbt):
+        
+        self.setVelocity(dobot, - 15000)
+
+        
+        distance = abs(position-self.position)
+        timeconstant = 2400.0/distance
+        print(timeconstant)
+        time.sleep(timeconstant)
+
+        self.setVelocity(dobot,0)
+
         self.position = position
 
     def getLoadingPosition(self):
         """
-        Get the loading position of the conveyor (might depend on business logic).
-        :return: The loading position (int)
+        this will be a fixed position set by the dobot class
         """
-        # Assuming the loading position is at the start of the conveyor
-        return 0
+        return self.loadingPos
 
-    def goToEndPos(self):
-        """
-        Move the conveyor to the end position.
-        :return: None
-        """
-        # Assuming the end position is equal to the length of the conveyor
-        self.position = self.length
-        print(f"Conveyor moved to end position: {self.position}")
+    def goToEndPos(self, dobot: dbt):
+        
+        self.setPosition(self.EndPos, dobot)  #it should be reaching the end position in 5 seconds
