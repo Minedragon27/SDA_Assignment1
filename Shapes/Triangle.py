@@ -83,9 +83,10 @@ def test_triangle():
     centroid_input = input("Enter the centroid (x, y) as two integers (comma-separated): ")
     centroid = list(map(int, centroid_input.split(',')))
 
-    sideLength = (((math.sqrt((centroid[0]-topvertex[0]) ** 2 + (centroid[1]-topvertex[1]) ** 2))/2)*3) / 0.866
+    sideLength = int(input("sideLength"))
+    #sideLength = (((math.sqrt((centroid[0]-topvertex[0]) ** 2 + (centroid[1]-topvertex[1]) ** 2))/2)*3) / 0.866
 
-    orientation = int(0)
+    orientation = int(2.32)
 
     # Create a Triangle object
     color = (0, 255, 0)  # Green color for the triangle
