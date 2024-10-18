@@ -4,7 +4,7 @@ import time
 from serial.tools import list_ports
 
 class Conveyor:
-    def __init__(self, velocity=0, length=0, width=0, position=0,loadingPos=(200,20,0)):
+    def __init__(self, length=0, width=0, position=0,loadingPos=(200,20,0)):
         """
         Constructor to initialize the Conveyor attributes.
         :param velocity: Speed of the conveyor (int)
@@ -12,7 +12,7 @@ class Conveyor:
         :param width: Width of the conveyor (int)
         :param position: Current position of the conveyor (int)
         """
-        self.velocity = velocity
+        self.velocity = 0
         self.length = length
         self.width = width
         self.position = position
