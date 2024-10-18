@@ -6,10 +6,12 @@ from Shape import *
 class Square(Shape):
     def __init__(self, color, position, orientation, depth, sideLength):
         super().__init__(color, position, orientation, depth) 
+        PI = math.pi
+        HALF_PI = PI / 2
         self.__sideLength = sideLength
         self.__color = color  # Store color
         self.__position = position  # Initialize position
-        self.__orientation = math.radians(orientation)  # Initialize orientation
+        self.__orientation = - math.radians(orientation) + HALF_PI  # Initialize orientation
         self.square_surface = None  # To hold the square surface
         #self.width = math.sin(self.__orientation)*self.__sideLength + math.cos(self.__orientation)*self.__sideLength
 
@@ -29,6 +31,8 @@ class Square(Shape):
 
     def drawShape(self, window: pygame.Surface):
         self.getCenter()
+        PI = math.pi
+        HALF_PI = PI / 2
         square_surface = pygame.Surface((self.__sideLength, self.__sideLength), pygame.SRCALPHA)
         square_surface.fill(self.__color)
         self.rotated_surface = pygame.transform.rotate(square_surface, math.degrees(self.__orientation))

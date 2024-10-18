@@ -43,6 +43,7 @@ class Shape:
         return "shape"
 
     def clickedOn(self, mousePoint):
+
         raise NotImplementedError("Subclasses should implement this method.")
 
     def drawShape(self, window):
