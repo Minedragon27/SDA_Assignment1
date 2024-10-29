@@ -62,3 +62,4 @@ class Conveyor:
     def goToEndPos(self, dobot: dbt):
         
         self.setPosition(self.EndPos, dobot)  #it should be reaching the end position in 5 seconds
+        self.position=self.getLoadingPosition()

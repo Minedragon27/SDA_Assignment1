@@ -1,7 +1,7 @@
 import math
 import pygame
 from pygame.locals import *
-from Shape import *
+from Shapes.Shape import Shape
 
 
 class Square(Shape):

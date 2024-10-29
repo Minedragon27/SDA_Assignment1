@@ -3,9 +3,9 @@ import numpy as np # import numpy library
 import pygame
 import cv2
 #from Shape import Shape
-from Triangle import Triangle
-from Square import Square
-from Circle import Circle
+from Shapes.Triangle import Triangle
+from Shapes.Square import Square
+from Shapes.Circle import Circle
 from pygame.locals import *
 
 # Initialize Pygame
@@ -164,7 +164,7 @@ class Camera: # create Class Camera
 # Initialize Camera
 camera = Camera()
 camera.setResolution(1280, 720)
-crop_x1, crop_y1, crop_x2, crop_y2 = 410, 255, 715, 575
+crop_x1, crop_y1, crop_x2, crop_y2 = 422,255,715,580
     # Main Loop
 
 def Testfunction():
@@ -188,7 +188,7 @@ def Testfunction():
         window.fill((255, 255, 255))  # White background
     
         # For each detected shape, create the corresponding Pygame object
-        shapes.clear()  # Clear the previous frame's shapes
+  # Clear the previous frame's shapes
         for shape_info in shapes_info_list:
             shape_type = shape_info['type']
             position = shape_info['position']
@@ -237,7 +237,7 @@ def Testfunction():
         pygame.display.update()
 
 # Clean up
-Testfunction()
-camera.release_camera()
-pygame.quit()
-cv2.destroyAllWindows()
+#Testfunction()
+#camera.release_camera()
+#pygame.quit()
+#cv2.destroyAllWindows()

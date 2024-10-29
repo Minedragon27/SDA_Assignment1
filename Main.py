@@ -8,6 +8,9 @@ import DoBotArm as dbt
 from serial.tools import list_ports
 import threading
 from Conveyor import Conveyor
+from Shapes.Triangle import Triangle
+from Shapes.Square import Square
+from Shapes.Circle import Circle
 
 class State:
     """Base class for all states in the state machine."""
@@ -72,8 +75,34 @@ class StateMachine:
 #state functions
 
 def stepSearchObject():
-    shapes=camera.getShapes()
-    gui.addShapes(shapes)
+
+    crop_x1, crop_y1, crop_x2, crop_y2 = 422,255,715,580
+    shapes=[]
+    frame = camera.getImage(crop_x1, crop_y1, crop_x2, crop_y2)
+    # Detect shapes in the frame
+
+    processed_frame, shapes_info_list, object_count = camera.getShapes(frame)
+    for shape_info in shapes_info_list:
+            shape_type = shape_info['type']
+            position = shape_info['position']
+            color = shape_info['color']
+            orientation = shape_info['orientation']
+            side_length = shape_info['longest_side_length']
+            centroid = shape_info['centroid']
+            #print(centroid)
+
+            if shape_type == "Triangle":
+                triangle = Triangle(color, position, centroid, orientation, 0, side_length)
+                shapes.append(triangle)
+        
+            elif shape_type == "Square":
+                square = Square(color, position, orientation, 0, side_length)
+                shapes.append(square)
+
+            elif shape_type == "Circle":
+                circle = Circle(color, position, orientation, 0, side_length)
+                shapes.append(circle)
+    gui.addShapes(shapes,window)
     if gui.getShapes().count==0:  return
     return userInputState
 
@@ -83,25 +112,38 @@ def entryUserInput():
 def stepUserInput():
     for event in pygame.event.get():
         if event.type==shapeSelectedType:
-            gui.selectShape(event.shape)
+            gui.selectShape(event.shape,dobot)
             return moveArmToObjectState
     if gui.checkTimer(100): return searchObjectState        
 
 def stepMoveArmToObject():
-    if dobot.getPosition()==gui.getSelectedShape().getCenter():
+    x,y,z,rHead, joint1Angle, joint2Angle, joint3Angle, joint4Angle=dobot.getPosition()
+    targX,targY=gui.getSelectedShape().getCenter()
+    targX,targY=gui.ConvertCoords(targX,targY)
+
+    if int(x)==int(targX) and int(y)==int(targY):
+        dobot.moveArmRelXYZ(0,0,-70)
         return placeOnConveyorState
-    
+    #else: print("x: " + str(int(x)) + " " + str(int(targX)) + " y: " + str(int(y)) + " " + str(int(targY)))
+
 def entryPlaceOnConveyor():
+    print("Going to conveyor")
     dobot.toggleSuction()
-    dobot.moveArmXYZ(conveyor.getLoadingPosition(),10)
+    dobot.moveArmRelXYZ(0,0,70)
+    dobot.moveArmRelXY(100,0)
+    dobot.moveArmXYZ(200,conveyor.getLoadingPosition(),10)
 
 def stepPlaceOnConveyor():
-    if dobot.getPosition == conveyor.getLoadingPosition():
+    x,y,z,rHead, joint1Angle, joint2Angle, joint3Angle, joint4Angle=dobot.getPosition()
+    targY=conveyor.getLoadingPosition()
+    if int(y) == int(targY):
         return searchObjectState
     
 def leavePlaceOnConveyro():
     dobot.toggleSuction()
-    conveyor.goToEndPos()
+    dobot.moveArmRelXYZ(0,0,20)
+    conveyor.goToEndPos(dobot)
+    dobot.moveHome()
     
 #States
 
@@ -127,13 +169,21 @@ placeOnConveyorState= State(
 
 # Initialize the objects and pygame
 pygame.init()
+window = pygame.display.set_mode((800, 600))
+gui=GUI()
+window.fill((255,255,255))
+pygame.display.update()
+
+
 state_machine = StateMachine(initial_state=searchObjectState)
 camera=Camera()
+camera.setResolution(1280, 720)
+
+stepSearchObject()
 
 homeX, homeY, homeZ = 200, 0, 30
-dobot = dbt.DoBotArm("COM3", homeX, homeY, homeZ, home= True)
+dobot = dbt.DoBotArm("COM8", homeX, homeY, homeZ, home= True)
 
-gui=GUI(pygame.display.set_mode((0, 0), pygame.FULLSCREEN))
 
 conveyor=Conveyor(666,100,0)
 
@@ -145,18 +195,19 @@ def main():
 
     end=False
     dobot.moveHome()
-
+    
     # Run the state machine in a loop
     while True:
 
         try:
+            pygame.display.update()
             events=pygame.event.get()
             for event in events:
                 if event.type == QUIT:
                     end=True
                 if event.type==MOUSEBUTTONDOWN:
                     for shape in gui.getShapes():
-                        if shape.clickedOn():
+                        if shape.clickedOn(event.pos):
                             shapeSelected=pygame.event.Event(shapeSelectedType,shape=shape) # creates event and attaches the shape that was clicked on
                             pygame.event.post(shapeSelected) # posts the event
                             break # break so it doesnt go to multiple shapes if they overlap

@@ -1,6 +1,6 @@
 import math
 import pygame
-from Shape import *
+from Shapes.Shape import Shape
 
 class Triangle(Shape):
     def __init__(self, color, position, centroid, orientation, depth, sideLength): 
